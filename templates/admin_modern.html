@@ -1,0 +1,556 @@
+{% extends "base.html" %}
+
+{% block title %}Mes offres - JobMatch AI{% endblock %}
+
+{% block content %}
+<div class="particles" id="particles"></div>
+
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fas fa-briefcase me-3"></i>
+                <span class="text-gradient">Mes offres d'emploi</span>
+            </h1>
+            <p class="header-subtitle">Gérez vos offres et trouvez les meilleurs talents</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('add_job') }}" class="btn-modern">
+                <i class="fas fa-plus me-2"></i>Ajouter une offre
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card slide-in-left">
+            <div class="stat-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ job_offers|length }}</h3>
+                <p class="stat-label">Offres totales</p>
+            </div>
+        </div>
+        <div class="stat-card slide-in-up">
+            <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ job_offers|map(attribute='location')|unique|list|length }}</h3>
+                <p class="stat-label">Localisations</p>
+            </div>
+        </div>
+        <div class="stat-card slide-in-right">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ job_offers|selectattr('contract_type', 'equalto', 'CDI')|list|length }}</h3>
+                <p class="stat-label">CDI disponibles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Offers Table -->
+    {% if job_offers %}
+        <div class="jobs-section card-modern slide-in-up">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-list me-2"></i>Liste des offres
+                </h2>
+                <div class="section-info">
+                    <span class="info-badge">{{ job_offers|length }} offres</span>
+                </div>
+            </div>
+            
+            <div class="jobs-grid">
+                {% for job in job_offers %}
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-title-section">
+                            <h3 class="job-title">{{ job.title }}</h3>
+                            <span class="company-name">{{ job.company }}</span>
+                        </div>
+                        <div class="job-actions">
+                            <a href="{{ url_for('delete_job', job_id=job.id) }}" 
+                               class="btn-delete"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="job-content">
+                        <div class="job-description">
+                            <p>{{ job.description[:150] }}{% if job.description|length > 150 %}...{% endif %}</p>
+                        </div>
+                        
+                        <div class="job-requirements">
+                            <h4 class="requirements-title">
+                                <i class="fas fa-list-check me-2"></i>Compétences requises
+                            </h4>
+                            <div class="requirements-tags">
+                                {% for skill in job.requirements.split(',')[:5] %}
+                                <span class="skill-tag">{{ skill.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="job-footer">
+                        <div class="job-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-file-contract me-1"></i>{{ job.contract_type }}
+                            </span>
+                        </div>
+                        <div class="job-date">
+                            <i class="fas fa-calendar me-1"></i>
+                            Publiée récemment
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state card-modern slide-in-up">
+            <div class="empty-content">
+                <div class="empty-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h3 class="empty-title">Aucune offre d'emploi</h3>
+                <p class="empty-desc">Commencez par ajouter votre première offre pour attirer les meilleurs talents</p>
+                <div class="empty-actions">
+                    <a href="{{ url_for('add_job') }}" class="btn-modern">
+                        <i class="fas fa-plus me-2"></i>Ajouter une offre
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="quick-actions card-modern slide-in-up">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-bolt me-2"></i>Actions rapides
+            </h2>
+        </div>
+        <div class="actions-grid">
+            <a href="{{ url_for('index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="action-content">
+                    <h4>Voir le site</h4>
+                    <p>Retour à l'accueil</p>
+                </div>
+            </a>
+            <a href="{{ url_for('add_job') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="action-content">
+                    <h4>Ajouter une offre</h4>
+                    <p>Créer une nouvelle offre</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-container {
+    min-height: 100vh;
+    padding: 40px 20px;
+    position: relative;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.6s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.jobs-section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.info-badge {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 25px;
+}
+
+.job-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 25px;
+    transition: all 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.job-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.job-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.job-title-section {
+    flex: 1;
+}
+
+.job-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.company-name {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+}
+
+.job-description {
+    margin-bottom: 20px;
+}
+
+.job-description p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+}
+
+.requirements-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.requirements-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-tag {
+    background: rgba(79, 172, 254, 0.2);
+    color: #4facfe;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(79, 172, 254, 0.3);
+}
+
+.job-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.job-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.job-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.empty-desc {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 30px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.quick-actions {
+    margin-top: 20px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.action-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.action-content p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .jobs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .job-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .job-footer {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Create floating particles
+function createParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 25;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize particles on load
+createParticles();
+
+// Add interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.job-card, .stat-card, .action-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}

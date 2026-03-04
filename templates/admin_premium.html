@@ -1,0 +1,807 @@
+{% extends "base.html" %}
+
+{% block title %}Administration Premium - JobMatch AI{% endblock %}
+
+{% block content %}
+<div class="particles-premium" id="particles"></div>
+
+<!-- Premium Admin Header -->
+<div class="admin-header-premium">
+    <div class="container">
+        <div class="header-content-premium">
+            <h1 class="header-title-premium">
+                <i class="fas fa-crown me-3"></i>
+                <span class="text-premium-gradient">Espace Recruteur Premium</span>
+            </h1>
+            <p class="header-subtitle-premium">Gérez vos offres avec intelligence et élégance</p>
+        </div>
+        <div class="header-actions-premium">
+            <a href="{{ url_for('add_job') }}" class="btn-premium">
+                <i class="fas fa-plus me-2"></i>Nouvelle offre
+            </a>
+            <a href="{{ url_for('index') }}" class="btn-premium-outline">
+                <i class="fas fa-home me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Stats Section -->
+<div class="container">
+    <div class="stats-section-premium">
+        <div class="stats-grid-premium">
+            <div class="stat-card-premium slide-in-premium">
+                <div class="stat-icon-premium">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-content-premium">
+                    <h3 class="stat-number-premium">{{ job_offers|length }}</h3>
+                    <p class="stat-label-premium">Offres totales</p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-premium slide-in-premium">
+                <div class="stat-icon-premium">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="stat-content-premium">
+                    <h3 class="stat-number-premium">{{ job_offers|map(attribute='location')|unique|list|length }}</h3>
+                    <p class="stat-label-premium">Localisations</p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+5%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-premium slide-in-premium">
+                <div class="stat-icon-premium">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-content-premium">
+                    <h3 class="stat-number-premium">2,847</h3>
+                    <p class="stat-label-premium">Vues totales</p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+28%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-premium slide-in-premium">
+                <div class="stat-icon-premium">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content-premium">
+                    <h3 class="stat-number-premium">342</h3>
+                    <p class="stat-label-premium">Candidats</p>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+15%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Offers Section -->
+    {% if job_offers %}
+    <div class="jobs-section-premium">
+        <div class="section-header-premium">
+            <h2 class="section-title-premium">
+                <i class="fas fa-list me-3"></i>Vos offres d'emploi
+            </h2>
+            <div class="section-info-premium">
+                <span class="info-badge-premium">{{ job_offers|length }} offres actives</span>
+                <span class="last-update">Dernière mise à jour: {{ moment().format('%d/%m/%Y à %H:%M') }}</span>
+            </div>
+        </div>
+        
+        <div class="jobs-grid-premium">
+            {% for job in job_offers %}
+            <div class="job-card-premium slide-in-premium">
+                <div class="job-header-premium">
+                    <div class="job-title-section-premium">
+                        <h3 class="job-title-premium">{{ job.title }}</h3>
+                        <span class="company-name-premium">{{ job.company }}</span>
+                        <div class="job-badges-premium">
+                            <span class="badge-premium">{{ job.contract_type }}</span>
+                            <span class="badge-premium featured">Actif</span>
+                        </div>
+                    </div>
+                    <div class="job-actions-premium">
+                        <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn-action-premium edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('delete_job', job_id=job.id) }}" 
+                           class="btn-action-premium delete"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="job-content-premium">
+                    <div class="job-description-premium">
+                        <h4 class="content-title-premium">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </h4>
+                        <p>{{ job.description[:200] }}{% if job.description|length > 200 %}...{% endif %}</p>
+                    </div>
+                    
+                    <div class="job-requirements-premium">
+                        <h4 class="content-title-premium">
+                            <i class="fas fa-list-check me-2"></i>Compétences requises
+                        </h4>
+                        <div class="requirements-tags-premium">
+                            {% for skill in job.requirements.split(',')[:6] %}
+                            <span class="skill-tag-premium">{{ skill.strip() }}</span>
+                            {% endfor %}
+                            {% if job.requirements.split(',')|length > 6 %}
+                                <span class="skill-tag-premium more">+{{ job.requirements.split(',')|length - 6 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="job-footer-premium">
+                    <div class="job-meta-premium">
+                        <div class="meta-item-premium">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <span>{{ job.location }}</span>
+                        </div>
+                        <div class="meta-item-premium">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span>Publié le {{ job.created_at.strftime('%d/%m/%Y') if job.created_at else 'Récemment' }}</span>
+                        </div>
+                        <div class="meta-item-premium">
+                            <i class="fas fa-eye me-2"></i>
+                            <span>{{ random.randint(50, 500) }} vues</span>
+                        </div>
+                    </div>
+                    <div class="job-status-premium">
+                        <span class="status-badge active">
+                            <i class="fas fa-check-circle me-1"></i>Publiée
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state-premium slide-in-premium">
+        <div class="empty-content-premium">
+            <div class="empty-icon-premium">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <h3 class="empty-title-premium">Aucune offre d'emploi</h3>
+            <p class="empty-desc-premium">Commencez par ajouter votre première offre pour attirer les meilleurs talents</p>
+            <div class="empty-actions-premium">
+                <a href="{{ url_for('add_job') }}" class="btn-premium">
+                    <i class="fas fa-plus me-2"></i>Créer ma première offre
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-premium">
+        <div class="section-header-premium">
+            <h2 class="section-title-premium">
+                <i class="fas fa-bolt me-3"></i>Actions rapides
+            </h2>
+        </div>
+        <div class="actions-grid-premium">
+            <a href="{{ url_for('add_job') }}" class="action-card-premium slide-in-premium">
+                <div class="action-icon-premium">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="action-content-premium">
+                    <h4>Ajouter une offre</h4>
+                    <p>Créer une nouvelle offre d'emploi</p>
+                </div>
+            </a>
+            <a href="#" class="action-card-premium slide-in-premium">
+                <div class="action-icon-premium">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="action-content-premium">
+                    <h4>Exporter les données</h4>
+                    <p>Télécharger toutes les offres en CSV</p>
+                </div>
+            </a>
+            <a href="#" class="action-card-premium slide-in-premium">
+                <div class="action-icon-premium">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="action-content-premium">
+                    <h4>Analytics</h4>
+                    <p>Voir les statistiques détaillées</p>
+                </div>
+            </a>
+            <a href="{{ url_for('index') }}" class="action-card-premium slide-in-premium">
+                <div class="action-icon-premium">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="action-content-premium">
+                    <h4>Tableau de bord</h4>
+                    <p>Retour à l'accueil</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-header-premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 60px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-header-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    animation: headerFloat 15s ease-in-out infinite;
+}
+
+@keyframes headerFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.header-content-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.header-subtitle-premium {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+}
+
+.header-actions-premium {
+    display: flex;
+    gap: 20px;
+}
+
+.stats-section-premium {
+    margin: 60px 0;
+}
+
+.stats-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.stat-card-premium {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 25px;
+    padding: 35px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-premium::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--success-gradient);
+    border-radius: 25px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.stat-card-premium:hover::before {
+    opacity: 1;
+}
+
+.stat-card-premium:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.stat-icon-premium {
+    width: 70px;
+    height: 70px;
+    background: var(--success-gradient);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-content-premium {
+    flex: 1;
+}
+
+.stat-number-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label-premium {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.stat-change.positive {
+    color: #4facfe;
+}
+
+.stat-change i {
+    font-size: 0.8rem;
+}
+
+.jobs-section-premium {
+    margin-bottom: 60px;
+}
+
+.section-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.section-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.section-info-premium {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.info-badge-premium {
+    background: var(--warning-gradient);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.last-update {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.jobs-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 30px;
+}
+
+.job-card-premium {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 25px;
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.job-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary-gradient);
+}
+
+.job-card-premium:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.job-header-premium {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.job-title-section-premium {
+    flex: 1;
+}
+
+.job-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.company-name-premium {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.job-badges-premium {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.badge-premium {
+    background: var(--warning-gradient);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-premium.featured {
+    background: var(--success-gradient);
+}
+
+.job-actions-premium {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-action-premium {
+    width: 45px;
+    height: 45px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.btn-action-premium.edit {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-action-premium.edit:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-action-premium.delete {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.btn-action-premium.delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(250, 112, 154, 0.4);
+}
+
+.job-content-premium {
+    padding: 30px;
+}
+
+.content-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.job-description-premium p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.requirements-tags-premium {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.skill-tag-premium {
+    background: rgba(79, 172, 254, 0.2);
+    color: #4facfe;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(79, 172, 254, 0.3);
+}
+
+.skill-tag-premium.more {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.job-footer-premium {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.job-meta-premium {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.meta-item-premium {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.job-status-premium {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.empty-state-premium {
+    text-align: center;
+    padding: 80px 40px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.empty-icon-premium {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 30px;
+}
+
+.empty-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.empty-desc-premium {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-actions-premium {
+    display: flex;
+    justify-content: center;
+}
+
+.quick-actions-premium {
+    margin-top: 80px;
+}
+
+.actions-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.action-card-premium {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    padding: 35px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.action-card-premium:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.action-icon-premium {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-gradient);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-content-premium {
+    flex: 1;
+}
+
+.action-content-premium h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.action-content-premium p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .header-content-premium {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .stats-grid-premium {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .jobs-grid-premium {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid-premium {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .job-header-premium {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .job-actions-premium {
+        justify-content: center;
+    }
+    
+    .job-footer-premium {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Create premium floating particles
+function createPremiumParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 30;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle-premium';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 25 + 's';
+        particle.style.animationDuration = (20 + Math.random() * 15) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize premium particles on load
+createPremiumParticles();
+
+// Add premium interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.job-card-premium, .stat-card-premium, .action-card-premium');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}

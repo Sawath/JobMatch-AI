@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}JobMatch AI Premium - Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="particles-premium" id="particles"></div>
+
+<!-- Premium Hero Section -->
+<section class="hero-premium">
+    <div class="container">
+        <div class="hero-content">
+            <div class="floating-premium">
+                <div class="brand-logo-premium">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
+            <h1 class="hero-title-premium">
+                Bienvenue <span class="text-premium-gradient">{{ session.username }}</span> !
+            </h1>
+            <p class="hero-subtitle-premium">
+                {% if session.role == 'recruteur' %}
+                    Espace Recruteur Premium - Gérez vos talents avec excellence
+                {% else %}
+                    Espace Candidat Premium - Trouvez l'opportunité parfaite
+                {% endif %}
+            </p>
+            <div class="hero-buttons">
+                {% if session.role == 'recruteur' %}
+                    <a href="{{ url_for('admin') }}" class="btn-premium">
+                        <i class="fas fa-briefcase me-3"></i>Espace Recruteur
+                    </a>
+                {% endif %}
+                <button class="btn-premium" onclick="scrollToCV()">
+                    <i class="fas fa-search me-3"></i>Analyser un CV
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Premium CV Analysis Section -->
+            <div id="cv-section" class="card-premium fade-in-premium">
+                <div class="card-header-premium">
+                    <h3 class="card-title-premium">
+                        <i class="fas fa-file-alt me-3"></i>
+                        {% if session.role == 'recruteur' %}
+                            Analyse de CV - Mode Recruteur Premium
+                        {% else %}
+                            Votre CV Premium
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('match_cv') }}">
+                        <div class="form-group-premium">
+                            <label class="form-label-premium">
+                                <i class="fas fa-paste me-2"></i>Contenu du CV *
+                            </label>
+                            <textarea 
+                                class="form-premium" 
+                                id="cv_content" 
+                                name="cv_content" 
+                                rows="15" 
+                                placeholder="Collez ici le contenu complet de votre CV pour une analyse premium..."
+                                required
+                            ></textarea>
+                            <div class="form-help-premium">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Incluez votre formation, expérience professionnelle, compétences, projets, certifications...
+                            </div>
+                        </div>
+
+                        <div class="form-group-premium">
+                            <label class="form-label-premium">
+                                <i class="fas fa-envelope me-2"></i>Email Professionnel
+                            </label>
+                            <input 
+                                type="email" 
+                                class="form-premium" 
+                                id="email" 
+                                name="email" 
+                                placeholder="votre.email@professionnel.com"
+                                value="{{ session.user_email if session.user_email else '' }}"
+                            >
+                            <div class="form-help-premium">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Votre email est protégé et ne sera jamais partagé
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-premium">
+                            <i class="fas fa-magic me-3"></i>Analyse Premium
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Premium Features Grid -->
+            <div class="features-grid-premium">
+                <div class="feature-card-premium slide-in-premium">
+                    <div class="feature-icon-premium">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="feature-title-premium">IA Avancée</h4>
+                    <p class="feature-desc-premium">Algorithmes de pointe avec TF-IDF et similarité cosinus pour un matching ultra-précis</p>
+                    <div class="feature-stats">
+                        <span class="stat-badge">99.9%</span>
+                        <span class="stat-label">Précision</span>
+                    </div>
+                </div>
+                <div class="feature-card-premium slide-in-premium">
+                    <div class="feature-icon-premium">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="feature-title-premium">Performance</h4>
+                    <p class="feature-desc-premium">Analyse instantanée avec traitement en temps réel et résultats optimisés</p>
+                    <div class="feature-stats">
+                        <span class="stat-badge">0.3s</span>
+                        <span class="stat-label">Temps</span>
+                    </div>
+                </div>
+                <div class="feature-card-premium slide-in-premium">
+                    <div class="feature-icon-premium">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="feature-title-premium">Sécurité</h4>
+                    <p class="feature-desc-premium">Protection de niveau entreprise avec cryptage avancé et conformité RGPD</p>
+                    <div class="feature-stats">
+                        <span class="stat-badge">256-bit</span>
+                        <span class="stat-label">Cryptage</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if session.role == 'recruteur' %}
+            <!-- Premium Recruiter Dashboard -->
+            <div class="recruiter-dashboard-premium card-premium slide-in-premium">
+                <div class="card-header-premium">
+                    <h3 class="card-title-premium">
+                        <i class="fas fa-briefcase me-3"></i>Espace Recruteur Premium
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="dashboard-desc-premium">Accédez à des fonctionnalités exclusives pour optimiser votre recrutement :</p>
+                    <div class="dashboard-features-premium">
+                        <div class="dashboard-feature-premium">
+                            <div class="feature-icon-small">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>Création d'offres</h5>
+                                <p>Templates premium et suggestions IA</p>
+                            </div>
+                        </div>
+                        <div class="dashboard-feature-premium">
+                            <div class="feature-icon-small">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>Analytics Avancés</h5>
+                                <p>Statistiques détaillées et insights</p>
+                            </div>
+                        </div>
+                        <div class="dashboard-feature-premium">
+                            <div class="feature-icon-small">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>Gestion des Talents</h5>
+                                <p>Base de données candidates enrichie</p>
+                            </div>
+                        </div>
+                        <div class="dashboard-feature-premium">
+                            <div class="feature-icon-small">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>Alertes Intelligentes</h5>
+                                <p>Notifications en temps réel</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-5">
+                        <a href="{{ url_for('admin') }}" class="btn-premium">
+                            <i class="fas fa-crown me-2"></i>Accéder à l'Espace Premium
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-premium {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hero-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+    animation: heroFloat 20s ease-in-out infinite;
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 1;
+    position: relative;
+}
+
+.brand-logo-premium {
+    font-size: 6rem;
+    margin-bottom: 40px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+}
+
+.hero-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 30px;
+    text-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle-premium {
+    font-size: 1.4rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 50px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.container {
+    padding: 80px 20px;
+}
+
+.form-group-premium {
+    margin-bottom: 40px;
+}
+
+.form-label-premium {
+    display: block;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-help-premium {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.features-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin: 80px 0;
+}
+
+.feature-card-premium {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 25px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card-premium::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--success-gradient);
+    border-radius: 25px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.feature-card-premium:hover::before {
+    opacity: 1;
+}
+
+.feature-card-premium:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.feature-icon-premium {
+    font-size: 4rem;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+}
+
+.feature-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.feature-desc-premium {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+.feature-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-badge {
+    background: var(--warning-gradient);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.recruiter-dashboard-premium {
+    margin-top: 60px;
+}
+
+.dashboard-desc-premium {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 40px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.dashboard-features-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.dashboard-feature-premium {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.dashboard-feature-premium:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.feature-icon-small {
+    width: 60px;
+    height: 60px;
+    background: var(--warning-gradient);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.feature-content h5 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.feature-content p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.card-header-premium {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 25px 25px 0 0;
+    border: none;
+}
+
+.card-title-premium {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .hero-title-premium {
+        font-size: 3rem;
+    }
+    
+    .hero-subtitle-premium {
+        font-size: 1.2rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .features-grid-premium {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .dashboard-features-premium {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .feature-card-premium {
+        padding: 30px;
+    }
+    
+    .card-header-premium {
+        padding: 25px 30px;
+    }
+}
+</style>
+
+<script>
+function scrollToCV() {
+    document.getElementById('cv-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+    });
+}
+
+// Create premium floating particles
+function createPremiumParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 50;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle-premium';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 25 + 's';
+        particle.style.animationDuration = (20 + Math.random() * 15) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize premium particles on load
+createPremiumParticles();
+
+// Add premium interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.feature-card-premium, .dashboard-feature-premium');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.15}s`;
+    });
+    
+    // Add hover effects to buttons
+    const buttons = document.querySelectorAll('.btn-premium');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.08)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+        });
+    });
+});
+</script>
+{% endblock %}

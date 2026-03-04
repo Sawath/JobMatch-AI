@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} - JobMatch AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Bouton retour -->
+    <div class="mb-4">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux offres
+        </a>
+    </div>
+
+    <!-- Détails de l'offre -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #1e293b; border-bottom: 1px solid #e2e8f0;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="mb-2" style="color: #1e293b; font-weight: 700;">{{ job.title }}</h2>
+                            <h4 class="mb-0" style="color: #2563eb; font-weight: 600; font-size: 1.5rem;">{{ job.company }}</h4>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge" style="background: #2563eb; color: white;">{{ job.contract_type }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Informations principales -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Lieu</small>
+                                    <p class="mb-0 fw-bold">{{ job.location }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-briefcase text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Type de contrat</small>
+                                    <p class="mb-0 fw-bold">{{ job.contract_type }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description du poste -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle text-primary me-2"></i>Description du poste
+                        </h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-0">{{ job.description | safe }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Exigences -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-clipboard-check text-primary me-2"></i>Exigences et qualifications
+                        </h5>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-0">{{ job.requirements | safe }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-3">
+                        {% if session.user_id %}
+                            <button class="btn btn-primary btn-lg" onclick="scrollToCV()">
+                                <i class="fas fa-search me-2"></i>Postuler avec mon CV
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Connectez-vous pour postuler
+                            </a>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary" onclick="shareJob()">
+                            <i class="fas fa-share-alt me-2"></i>Partager
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Carte de matching -->
+            {% if session.user_id and session.role == 'candidat' %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Votre compatibilité
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: 0%">
+                                <span class="fw-bold">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-3">Analysez votre CV pour connaître votre taux de compatibilité</p>
+                    <button class="btn btn-success btn-sm" onclick="analyzeCompatibility()">
+                        <i class="fas fa-search me-2"></i>Analyser ma compatibilité
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Informations supplémentaires -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info me-2"></i>Informations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-building text-primary me-2"></i>
+                            <strong>Entreprise:</strong> {{ job.company }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Localisation:</strong> {{ job.location }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-file-contract text-primary me-2"></i>
+                            <strong>Contrat:</strong> {{ job.contract_type }}
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <strong>Publié:</strong> {{ job.created_at.strftime('%d/%m/%Y') if job.created_at else 'Récemment' }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-bookmark me-2"></i>Sauvegarder
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-print me-2"></i>Imprimer
+                        </button>
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-envelope me-2"></i>Contacter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section CV pour postulation -->
+    {% if session.user_id %}
+    <div id="cv-section" class="card shadow-lg mt-5 fade-in">
+        <div class="card-header bg-gradient text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-file-alt me-2"></i>Postuler avec votre CV
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('match_cv') }}">
+                <input type="hidden" name="job_id" value="{{ job.id }}">
+                <div class="mb-3">
+                    <label for="cv_content" class="form-label fw-bold">
+                        <i class="fas fa-paste me-1"></i>Contenu du CV *
+                    </label>
+                    <textarea 
+                        class="form-control" 
+                        id="cv_content" 
+                        name="cv_content" 
+                        rows="8" 
+                        placeholder="Collez ici le contenu complet de votre CV..."
+                        required
+                    ></textarea>
+                    <div class="form-text">
+                        Incluez votre formation, expérience professionnelle, compétences, projets, etc.
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-bold">
+                        <i class="fas fa-envelope me-1"></i>Email (optionnel)
+                    </label>
+                    <input 
+                        type="email" 
+                        class="form-control" 
+                        id="email" 
+                        name="email" 
+                        placeholder="votre.email@example.com"
+                    >
+                    <div class="form-text">
+                        Votre email nous permettra de vous contacter si nécessaire
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i>Postuler à cette offre
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function scrollToCV() {
+    document.getElementById('cv-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+    });
+}
+
+function shareJob() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ job.title }} chez {{ job.company }}',
+            text: '{{ job.description[:100] | safe }}...',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copier le lien
+        navigator.clipboard.writeText(window.location.href);
+        alert('Lien copié dans le presse-papiers !');
+    }
+}
+
+function analyzeCompatibility() {
+    scrollToCV();
+}
+
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Simuler une animation de compatibilité
+    setTimeout(() => {
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 85) progress = 85;
+                progressBar.style.width = progress + '%';
+                progressBar.querySelector('span').textContent = Math.round(progress) + '%';
+                if (progress >= 85) clearInterval(interval);
+            }, 200);
+        }
+    }, 1000);
+});
+</script>
+
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-smooth);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-medium);
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 4rem 0;
+    border-radius: 0 0 2rem 2rem;
+    margin-bottom: 3rem;
+}
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}JobMatch AI - Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center position-relative">
+    <div class="container position-relative">
+        <div class="floating">
+            <i class="fas fa-robot fa-4x mb-4"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">
+            Bienvenue {{ session.username }} !
+        </h1>
+        <p class="lead mb-4">
+            {% if session.role == 'recruteur' %}
+                Espace Recruteur - Gérez vos offres d'emploi
+            {% else %}
+                Trouvez l'emploi parfait grâce à l'intelligence artificielle
+            {% endif %}
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if session.role == 'recruteur' %}
+                <a href="{{ url_for('admin') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-briefcase me-2"></i>Mes offres
+                </a>
+            {% endif %}
+            <button class="btn btn-outline-light btn-lg" onclick="scrollToCV()">
+                <i class="fas fa-search me-2"></i>Analyser un CV
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div id="cv-section" class="card shadow-lg fade-in">
+            <div class="card-header bg-gradient text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    {% if session.role == 'recruteur' %}
+                        Analyse de CV - Mode Recruteur
+                    {% else %}
+                        Saisissez votre CV
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('match_cv') }}">
+                    <div class="mb-3">
+                        <label for="cv_content" class="form-label fw-bold">
+                            <i class="fas fa-paste me-1"></i>Contenu du CV *
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="cv_content" 
+                            name="cv_content" 
+                            rows="12" 
+                            placeholder="Collez ici le contenu complet de votre CV..."
+                            required
+                        ></textarea>
+                        <div class="form-text">
+                            Incluez votre formation, expérience professionnelle, compétences, projets, etc.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="email" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-1"></i>Email (optionnel)
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email" 
+                            placeholder="votre.email@example.com"
+                            value="{{ session.user_email if session.user_email else '' }}"
+                        >
+                        <div class="form-text">
+                            Votre email nous permettra de vous contacter si nécessaire
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Analyser mon CV
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-4 mb-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h6 class="card-title">Intelligence Artificielle</h6>
+                    <p class="card-text small text-muted">
+                        Analyse avancée avec TF-IDF et similarité cosinus
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h6 class="card-title">Rapide et Efficace</h6>
+                    <p class="card-text small text-muted">
+                        Résultats instantanés et classement par pertinence
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h6 class="card-title">Simple et Sécurisé</h6>
+                    <p class="card-text small text-muted">
+                        Interface intuitive et protection de vos données
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {% if session.role == 'recruteur' %}
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-briefcase me-2"></i>Accès Recruteur
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">En tant que recruteur, vous avez accès à des fonctionnalités avancées :</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-plus-circle text-success me-2"></i>
+                                Ajouter des offres d'emploi
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-edit text-primary me-2"></i>
+                                Modifier les offres existantes
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-trash text-danger me-2"></i>
+                                Supprimer des offres
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-chart-bar text-info me-2"></i>
+                                Voir les statistiques
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-users text-warning me-2"></i>
+                                Gérer les candidatures
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-search text-secondary me-2"></i>
+                                Tester les matchings
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('admin') }}" class="btn btn-warning">
+                        <i class="fas fa-briefcase me-2"></i>Gérer mes offres
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function scrollToCV() {
+    document.getElementById('cv-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+    });
+}
+
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.feature-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('fade-in');
+        }, index * 200);
+    });
+});
+</script>
+{% endblock %}

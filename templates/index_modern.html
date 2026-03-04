@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+
+{% block title %}JobMatch AI - Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="particles" id="particles"></div>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <div class="floating-element">
+                <div class="hero-logo">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
+            <h1 class="hero-title">
+                Bienvenue <span class="text-gradient">{{ session.username }}</span> !
+            </h1>
+            <p class="hero-subtitle">
+                {% if session.role == 'recruteur' %}
+                    Espace Recruteur - Gérez vos offres d'emploi avec intelligence
+                {% else %}
+                    Trouvez l'emploi parfait grâce à l'intelligence artificielle
+                {% endif %}
+            </p>
+            <div class="hero-buttons">
+                {% if session.role == 'recruteur' %}
+                    <a href="{{ url_for('admin') }}" class="btn-modern">
+                        <i class="fas fa-briefcase me-2"></i>Mes offres
+                    </a>
+                {% endif %}
+                <button class="btn-modern" onclick="scrollToCV()">
+                    <i class="fas fa-search me-2"></i>Analyser un CV
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- CV Analysis Section -->
+            <div id="cv-section" class="card-modern slide-in-up">
+                <div class="card-header-modern">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt me-2"></i>
+                        {% if session.role == 'recruteur' %}
+                            Analyse de CV - Mode Recruteur
+                        {% else %}
+                            Votre CV
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('match_cv') }}">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-paste me-2"></i>Contenu du CV *
+                            </label>
+                            <textarea 
+                                class="form-textarea-modern" 
+                                id="cv_content" 
+                                name="cv_content" 
+                                rows="12" 
+                                placeholder="Collez ici le contenu complet de votre CV..."
+                                required
+                            ></textarea>
+                            <div class="form-help">
+                                Incluez votre formation, expérience professionnelle, compétences, projets, etc.
+                            </div>
+                        </div>
+
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-envelope me-2"></i>Email (optionnel)
+                            </label>
+                            <input 
+                                type="email" 
+                                class="form-input-modern" 
+                                id="email" 
+                                name="email" 
+                                placeholder="votre.email@example.com"
+                                value="{{ session.user_email if session.user_email else '' }}"
+                            >
+                            <div class="form-help">
+                                Votre email nous permettra de vous contacter si nécessaire
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn-modern">
+                            <i class="fas fa-search me-2"></i>Analyser mon CV
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-card-modern slide-in-left">
+                    <div class="feature-icon-modern">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="feature-title">Intelligence Artificielle</h4>
+                    <p class="feature-desc">Analyse avancée avec TF-IDF et similarité cosinus pour un matching précis</p>
+                </div>
+                <div class="feature-card-modern slide-in-up">
+                    <div class="feature-icon-modern">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="feature-title">Rapide et Efficace</h4>
+                    <p class="feature-desc">Résultats instantanés et classement automatique par pertinence</p>
+                </div>
+                <div class="feature-card-modern slide-in-right">
+                    <div class="feature-icon-modern">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="feature-title">Simple et Sécurisé</h4>
+                    <p class="feature-desc">Interface intuitive et protection complète de vos données</p>
+                </div>
+            </div>
+
+            {% if session.role == 'recruteur' %}
+            <!-- Recruteur Dashboard -->
+            <div class="recruter-dashboard card-modern slide-in-up">
+                <div class="card-header-modern">
+                    <h3 class="card-title">
+                        <i class="fas fa-briefcase me-2"></i>Espace Recruteur
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="dashboard-desc">En tant que recruteur, accédez à des fonctionnalités avancées :</p>
+                    <div class="dashboard-features">
+                        <div class="dashboard-feature">
+                            <i class="fas fa-plus-circle text-success"></i>
+                            <span>Ajouter des offres d'emploi</span>
+                        </div>
+                        <div class="dashboard-feature">
+                            <i class="fas fa-edit text-primary"></i>
+                            <span>Modifier les offres existantes</span>
+                        </div>
+                        <div class="dashboard-feature">
+                            <i class="fas fa-trash text-danger"></i>
+                            <span>Supprimer des offres</span>
+                        </div>
+                        <div class="dashboard-feature">
+                            <i class="fas fa-chart-bar text-info"></i>
+                            <span>Voir les statistiques</span>
+                        </div>
+                        <div class="dashboard-feature">
+                            <i class="fas fa-users text-warning"></i>
+                            <span>Gérer les candidatures</span>
+                        </div>
+                        <div class="dashboard-feature">
+                            <i class="fas fa-search text-secondary"></i>
+                            <span>Tester les matchings</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('admin') }}" class="btn-modern">
+                            <i class="fas fa-briefcase me-2"></i>Gérer mes offres
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(240, 147, 251, 0.2) 0%, transparent 50%);
+    animation: backgroundShift 20s ease-in-out infinite;
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 1;
+    position: relative;
+}
+
+.hero-logo {
+    font-size: 5rem;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.container {
+    padding: 60px 20px;
+}
+
+.card-modern {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-modern:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.3);
+}
+
+.card-header-modern {
+    margin-bottom: 30px;
+}
+
+.card-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-group-modern {
+    margin-bottom: 30px;
+}
+
+.form-label-modern {
+    display: block;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.form-textarea-modern {
+    width: 100%;
+    padding: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 16px;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.form-textarea-modern:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.3);
+    transform: scale(1.02);
+}
+
+.form-input-modern {
+    width: 100%;
+    padding: 18px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-input-modern:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.3);
+    transform: scale(1.02);
+}
+
+.form-textarea-modern::placeholder,
+.form-input-modern::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-help {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.submit-btn-modern {
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 15px 30px rgba(79, 172, 254, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.submit-btn-modern:hover::before {
+    left: 100%;
+}
+
+.submit-btn-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(79, 172, 254, 0.5);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin: 60px 0;
+}
+
+.feature-card-modern {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card-modern::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s;
+    opacity: 0;
+}
+
+.feature-card-modern:hover::before {
+    animation: shimmer 0.5s ease-in-out;
+}
+
+.feature-card-modern:hover {
+    transform: translateY(-15px) scale(1.05);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+}
+
+.feature-icon-modern {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.feature-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.feature-desc {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+}
+
+.recruter-dashboard {
+    margin-top: 40px;
+}
+
+.dashboard-desc {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.dashboard-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.dashboard-feature {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-feature:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.dashboard-feature i {
+    font-size: 1.2rem;
+}
+
+.dashboard-feature span {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .card-modern {
+        padding: 25px;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-features {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function scrollToCV() {
+    document.getElementById('cv-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+    });
+}
+
+// Create floating particles
+function createParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 30;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize particles on load
+createParticles();
+
+// Add interactive animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card-modern, .feature-card-modern');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}

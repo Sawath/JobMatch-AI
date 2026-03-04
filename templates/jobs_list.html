@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Toutes les offres d'emploi - JobMatch AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="hero-section text-center position-relative mb-5">
+        <div class="container position-relative">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-briefcase me-3"></i>Toutes les offres d'emploi
+            </h1>
+            <p class="lead mb-4">
+                Découvrez toutes les opportunités disponibles et postulez directement
+            </p>
+            {% if session.user_id and session.role == 'recruteur' %}
+                <a href="{{ url_for('add_job') }}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-plus me-2"></i>Ajouter une offre
+                </a>
+                <a href="{{ url_for('admin') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-cog me-2"></i>Administration
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-gradient text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Filtrer les offres
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Recherche</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Titre, entreprise..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="location" class="form-label">Lieu</label>
+                    <select class="form-select" id="location" name="location">
+                        <option value="">Tous les lieux</option>
+                        {% set locations = job_offers|map(attribute='location')|unique|list %}
+                        {% for loc in locations %}
+                            <option value="{{ loc }}" {% if request.args.get('location') == loc %}selected{% endif %}>
+                                {{ loc }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="contract_type" class="form-label">Type de contrat</label>
+                    <select class="form-select" id="contract_type" name="contract_type">
+                        <option value="">Tous les types</option>
+                        {% set contracts = job_offers|map(attribute='contract_type')|unique|list %}
+                        {% for contract in contracts %}
+                            <option value="{{ contract }}" {% if request.args.get('contract_type') == contract %}selected{% endif %}>
+                                {{ contract }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des offres -->
+    {% if filtered_jobs %}
+        <div class="row">
+            {% for job in filtered_jobs %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow h-100 job-card">
+                        <div class="card-header bg-gradient text-white">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">{{ job.title }}</h5>
+                                    <h6 class="mb-0" style="color: #ffffff; font-weight: 500;">{{ job.company }}</h6>
+                                </div>
+                                <span class="badge bg-white text-primary">{{ job.contract_type }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    <span>{{ job.location }}</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted small">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    <span>Publié le {{ job.created_at.strftime('%d/%m/%Y') if job.created_at else 'Récemment' }}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text">{{ job.description[:200] }}{% if job.description|length > 200 %}...{% endif %}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-eye me-2"></i>Voir détails
+                                </a>
+                                {% if session.user_id %}
+                                    <button class="btn btn-outline-success btn-sm" onclick="quickApply('{{ job.id }}')">
+                                        <i class="fas fa-paper-plane me-1"></i>Postuler vite
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if filtered_jobs|length > 6 %}
+        <nav aria-label="Pagination des offres">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-4x text-muted mb-4"></i>
+            <h3 class="text-muted">Aucune offre trouvée</h3>
+            <p class="text-muted">
+                {% if request.args.get('search') or request.args.get('location') or request.args.get('contract_type') %}
+                    Essayez d'ajuster vos filtres pour voir plus d'offres.
+                {% else %}
+                    Aucune offre d'emploi n'est disponible pour le moment.
+                {% endif %}
+            </p>
+            {% if request.args.get('search') or request.args.get('location') or request.args.get('contract_type') %}
+                <a href="{{ url_for('jobs_list') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-times me-2"></i>Effacer les filtres
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal pour postulation rapide -->
+<div class="modal fade" id="quickApplyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-paper-plane me-2"></i>Postuler rapidement
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickApplyForm">
+                    <input type="hidden" id="quickJobId" name="job_id">
+                    <div class="mb-3">
+                        <label for="quickCvContent" class="form-label">Votre CV *</label>
+                        <textarea class="form-control" id="quickCvContent" name="cv_content" rows="6" 
+                                  placeholder="Collez votre CV ici..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quickEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="quickEmail" name="email" 
+                               placeholder="votre.email@example.com">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="submitQuickApply()">
+                    <i class="fas fa-paper-plane me-2"></i>Postuler
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function quickApply(jobId) {
+    document.getElementById('quickJobId').value = jobId;
+    const modal = new bootstrap.Modal(document.getElementById('quickApplyModal'));
+    modal.show();
+}
+
+function submitQuickApply() {
+    const form = document.getElementById('quickApplyForm');
+    const formData = new FormData(form);
+    
+    fetch('/match', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('quickApplyModal')).hide();
+            alert('Candidature envoyée avec succès !');
+            window.location.reload();
+        } else {
+            alert('Erreur lors de l\'envoi de la candidature.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'envoi de la candidature.');
+    });
+}
+
+// Animation des cartes
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.job-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('fade-in');
+        }, index * 100);
+    });
+});
+</script>
+
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 3rem 0;
+    border-radius: 0 0 2rem 2rem;
+}
+
+.job-card {
+    transition: var(--transition-smooth);
+}
+
+.job-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hard);
+}
+
+.job-card .card-header {
+    border-bottom: none;
+}
+
+.job-card .btn {
+    transition: var(--transition-smooth);
+}
+
+.job-card .btn:hover {
+    transform: translateY(-2px);
+}
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+</style>
+{% endblock %}

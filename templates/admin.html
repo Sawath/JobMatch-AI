@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - JobMatch AI{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary">
+                <i class="fas fa-briefcase me-2"></i>Mes offres d'emploi
+            </h2>
+            <div>
+                <a href="{{ url_for('add_job') }}" class="btn btn-success me-2">
+                    <i class="fas fa-plus me-1"></i>Ajouter une offre
+                </a>
+            </div>
+        </div>
+
+        {% if job_offers %}
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des offres d'emploi ({{ job_offers|length }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Entreprise</th>
+                                    <th>Lieu</th>
+                                    <th>Type de contrat</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in job_offers %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ job.title }}</strong>
+                                        </td>
+                                        <td>{{ job.company }}</td>
+                                        <td>
+                                            <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                                            {{ job.location }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ job.contract_type }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('delete_job', job_id=job.id) }}" 
+                                               class="btn btn-sm btn-danger"
+                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')">
+                                                <i class="fas fa-trash me-1"></i>Supprimer
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                <h4>Aucune offre d'emploi</h4>
+                <p>La base de données est vide. Ajoutez des offres d'emploi ou initialisez les données exemples.</p>
+                <div class="mt-3">
+                    <a href="{{ url_for('add_job') }}" class="btn btn-success me-2">
+                        <i class="fas fa-plus me-1"></i>Ajouter une offre
+                    </a>
+                    <a href="{{ url_for('init_sample_data') }}" class="btn btn-info">
+                        <i class="fas fa-database me-1"></i>Initialiser données exemples
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Statistiques
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h4 class="text-primary">{{ job_offers|length }}</h4>
+                                    <small class="text-muted">Offres d'emploi</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success">
+                                    {% set locations = job_offers|map(attribute='location')|unique|list %}
+                                    {{ locations|length }}
+                                </h4>
+                                <small class="text-muted">Lieux différents</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>Actions rapides
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-home me-1"></i>Voir le site
+                            </a>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('add_job') }}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-1"></i>Ajouter une offre
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
